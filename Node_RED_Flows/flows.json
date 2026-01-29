@@ -1,0 +1,1 @@
+[{"id":"2e155ecc.cc6402","type":"ui_gauge","z":"61cb31f.68da1d","name":"","group":"","order":0,"width":0,"height":0,"gtype":"gage","title":"Battery Voltage","label":"V","format":"{{value}}","min":0,"max":10,"colors":["#00b500","#e6e600","#ca3838"],"seg1":"","seg2":"","x":620,"y":320,"wires":[]}]
