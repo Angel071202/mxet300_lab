@@ -1,0 +1,92 @@
+import time
+import numpy as np
+import board
+import adafruit_bno055
+
+import L1_log
+
+i2c = board.I2C()
+imu = adafruit_bno055.BNO055_I2C(i2c)
+imu.mode = adafruit_bno055.MAGONLY_MODE
+
+x_min, x_max = 21.6875, 86.0
+y_min, y_max = -34.1875, 26.0625
+z_min, z_max = 80.9375, 146.375
+
+declination_angle = 7
+
+def calibrate_magnetometer(original_value, axis_min, axis_max):
+    temp = (original_value - axis_min) / (axis_max - axis_min)
+    calibrated_value = 2 * temp - 1
+    return calibrated_value
+
+def get_heading_deg():
+    x, y, _ = imu.magnetic
+    if x is None or y is None:
+        return None
+
+    x_c = calibrate_magnetometer(x, x_min, x_max)
+    y_c = calibrate_magnetometer(y, y_min, y_max)
+
+    # 1) base heading from notebook
+    heading = np.degrees(np.arctan2(y_c, x_c)) - declination_angle
+
+    # 2) rotate frame so that North is at 0 degrees
+    #    (if North currently reads around ±180, subtract 180)
+    heading = heading - 180
+
+    # 3) normalize into [-180, 180]
+    while heading > 180:
+        heading -= 360
+    while heading < -180:
+        heading += 360
+
+    return heading
+
+
+
+
+def log_heading_loop():
+    
+    
+    
+    while True:
+        heading = get_heading_deg()
+        if heading is not None:
+            # write numeric value to tmp file
+            L1_log.tmpFile(heading)
+            print(f"Heading: {heading:.1f} deg")
+        time.sleep(0.1)
+
+def heading_to_cardinal(heading):
+    # Normalize to [-180, 180]
+    while heading > 180:
+        heading -= 360
+    while heading < -180:
+        heading += 360
+
+    # Here we assume (based on your output):
+    #   North  = 0
+    #   West   = +90
+ing_and_direction_loop():
+    while True:
+        heading = get_heading_deg()
+        if heading is None:
+            time.sleep(0.1)
+            continue
+
+        direction = heading_to_cardinal(heading)
+
+        # IMPORTANT: pass value AND filename
+        L1_log.tmpFile(heading, "compassHeading.txt")
+        L1_log.stringTmpFile(direction, "compassDirection.txt")
+
+        print(f"Heading: {heading:.1f} deg, Direction: {direction}")
+        time.sleep(0.1)
+
+
+if __name__ =="__main__":
+
+	log_heading_and_direction_loop()
+
+

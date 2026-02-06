@@ -1,0 +1,259 @@
+# L3_Compass.py
+# Lab 3 – Compass Heading and Cardinal Directions
+
+import time
+import numpy as np
+import board
+import adafruit_bno055
+import L1_log
+
+
+# ---------- IMU SETUP ----------
+i2c = board.I2C()
+imu = adafruit_bno055.BNO055_I2C(i2c)
+imu.mode = adafruit_bno055.MAGONLY_MODE
+
+
+# ---------- CALIBRATION (FROM YOUR NOTEBOOK) ----------
+# X range:  21.6875  86.0
+# Y range: -34.1875  26.0625
+# Z range:  80.9375  146.375
+
+x_min, x_max = 21.6875, 86.0
+y_min, y_max = -34.1875, 26.0625
+z_min, z_max = 80.9375, 146.375
+
+declination_angle = 7  # degrees
+
+
+def calibrate_magnetometer(original_value, axis_min, axis_max):
+    temp = (original_value - axis_min) / (axis_max - axis_min)
+    calibrated_value = 2 * temp - 1
+    return calibrated_value
+
+
+# ========== FUNCTION 1: GET HEADING, NORTH ≈ 0° ==========
+
+def get_heading_deg():
+    """
+    Heading in degrees:
+      North ≈ 0°, East ≈ +90°, West ≈ -90°, South ≈ ±180°.
+    Math matches the lab notebook, then normalized.
+    """
+    x, y, _ = imu.magnetic
+    if x is None or y is None:
+        return None
+
+    # Calibrate X and Y
+    x_c = calibrate_magnetometer(x, x_min, x_max)
+    y_c = calibrate_magnetometer(y, y_min, y_max)
+
+    # Same as notebook: heading = -(atan2(y, x) - declination)
+    heading = np.degrees(np.arctan2(y_c, x_c)) - declination_angle
+    heading = -heading
+
+    # Normalize to [-180, 180]
+    while heading > 180:
+        heading -= 360
+    while heading < -180:
+        heading += 360
+
+    return heading
+
+
+# ========== FUNCTION 2: MAP TO CARDINAL LABEL ==========
+
+def heading_to_cardinal(heading):
+    """
+    Map heading (-180..180) to:
+      'North', 'North East', 'East', 'South East',
+      'South', 'South West', 'West', 'North West'
+    Convention used here:
+      North  ≈ 0°
+      East   ≈ +90°
+      West   ≈ -90°
+      South  ≈ ±180°
+    """
+    while heading > 180:
+        heading -= 360
+    while heading < -180:
+        heading += 360
+
+    if -15 <= heading <= 15:
+        return "North"
+    elif 15 < heading <= 60:
+        return "North East"
+    elif 60 < heading <= 120:
+        return "East"
+    elif 120 < heading <= 165:
+        return "South East"
+    elif heading >= 165 or heading <= -165:
+        return "South"
+    elif -165 < heading <= -120:
+        return "South West"
+    elif -120 < heading <= -60:
+        return "West"
+# L3_Compass.py
+# Lab 3 – Compass Heading and Cardinal Directions
+
+import time
+import numpy as np
+import board
+import adafruit_bno055
+import L1_log
+
+
+# ---------- IMU SETUP ----------
+i2c = board.I2C()
+imu = adafruit_bno055.BNO055_I2C(i2c)
+imu.mode = adafruit_bno055.MAGONLY_MODE
+
+
+# ---------- CALIBRATION (FROM YOUR NOTEBOOK) ----------
+# X range:  21.6875  86.0
+# Y range: -34.1875  26.0625
+# Z range:  80.9375  146.375
+
+x_min, x_max = 21.6875, 86.0
+y_min, y_max = -34.1875, 26.0625
+z_min, z_max = 80.9375, 146.375
+
+declination_angle = 7  # degrees
+
+
+def calibrate_magnetometer(original_value, axis_min, axis_max):
+    temp = (original_value - axis_min) / (axis_max - axis_min)
+    calibrated_value = 2 * temp - 1
+    return calibrated_value
+
+
+# ========== FUNCTION 1: GET HEADING, NORTH ≈ 0° ==========
+
+def get_heading_deg():
+    """
+    Heading in degrees:
+      North ≈ 0°, East ≈ +90°, West ≈ -90°, South ≈ ±180°.
+    Math matches the lab notebook, then normalized.
+    """
+    x, y, _ = imu.magnetic
+    if x is None or y is None:
+        return None
+
+    # Calibrate X and Y
+    x_c = calibrate_magnetometer(x, x_min, x_max)
+    y_c = calibrate_magnetometer(y, y_min, y_max)
+
+    # Same as notebook: heading = -(atan2(y, x) - declination)
+    heading = np.degrees(np.arctan2(y_c, x_c)) - declination_angle
+    heading = -heading
+
+    # Normalize to [-180, 180]
+    while heading > 180:
+        heading -= 360
+    while heading < -180:
+        heading += 360
+
+    return heading
+
+
+# ========== FUNCTION 2: MAP TO CARDINAL LABEL ==========
+
+def heading_to_cardinal(heading):
+    """
+    Map heading (-180..180) to:
+      'North', 'North East', 'East', 'South East',
+      'South', 'South West', 'West', 'North West'
+    Convention used here:
+      North  ≈ 0°
+      East   ≈ +90°
+      West   ≈ -90°
+      South  ≈ ±180°
+    """
+    while heading > 180:
+        heading -= 360
+    while heading < -180:
+        heading += 360
+
+    if -15 <= heading <= 15:
+        return "North"
+    elif 15 < heading <= 60:
+        return "North East"
+    elif 60 < heading <= 120:
+        return "East"
+    elif 120 < heading <= 165:
+        return "South East"
+    elif heading >= 165 or heading <= -165:
+        return "South"
+    elif -165 < heading <= -120:
+        return "South West"
+    elif -120 < heading <= -60:
+        return "West"
+    elif -60 < heading < -15:
+        return "North West"
+    else:
+        return "North"
+
+
+# ========== MAIN LOGGING LOOP ==========
+
+def log_heading_and_direction_loop():
+    """
+    Continuously log:
+      - numeric heading to /tmp/compassHeading.txt
+      - cardinal direction text to /tmp/compassDirection.txt
+    for Node-RED.
+    """
+    while True:
+        heading = get_heading_deg()
+        if heading is None:
+            time.sleep(0.1)
+            continue
+
+        direction = heading_to_cardinal(heading)
+
+        # numeric log for gauge
+        L1_log.tmpFile(heading, "compassHeading.txt")
+        # string log for direction text
+        L1_log.stringTmpFile(direction, "compassDirection.txt")
+
+        print(f"Heading: {heading:.2f} deg, Direction: {direction}")
+        time.sleep(0.1)
+
+
+if __name__ == "__main__":
+    log_heading_and_direction_loop()
+    elif -60 < heading < -15:
+        return "North West"
+    else:
+        return "North"
+
+
+# ========== MAIN LOGGING LOOP ==========
+
+def log_heading_and_direction_loop():
+    """
+    Continuously log:
+      - numeric heading to /tmp/compassHeading.txt
+      - cardinal direction text to /tmp/compassDirection.txt
+    for Node-RED.
+    """
+    while True:
+        heading = get_heading_deg()
+        if heading is None:
+            time.sleep(0.1)
+            continue
+
+        direction = heading_to_cardinal(heading)
+
+        # numeric log for gauge
+        L1_log.tmpFile(heading, "compassHeading.txt")
+        # string log for direction text
+        L1_log.stringTmpFile(direction, "compassDirection.txt")
+
+        print(f"Heading: {heading:.2f} deg, Direction: {direction}")
+        time.sleep(0.1)
+
+
+if __name__ == "__main__":
+    log_heading_and_direction_loop()
+
