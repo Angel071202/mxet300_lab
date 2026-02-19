@@ -11,4 +11,3 @@ while True:
     open("/tmp/thetadot.txt", "w").write(str(float(thetadot)))
 
     time.sleep(0.2)
-
