@@ -1,0 +1,16 @@
+
+import time
+import L2_kinematics as kin
+
+file_path = "/tmp/L3_speeds.txt"
+
+while True:
+    pdl, pdr = kin.getPdCurrent()
+    xdot, thetadot = kin.getMotion()
+    
+    with open(file_path, "w") as f:
+        f.write(f"{pdl},{pdr},{xdot},{thetadot}")
+	
+  
+    time.sleep(0.2)
+
