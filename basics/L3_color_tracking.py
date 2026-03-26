@@ -37,12 +37,12 @@ size_h = 160	# Resized image height. This is the image height in pixels.
 fov = 1         # Camera field of view in rad (estimate)
 
 #    Color Range, described in HSV
-v1_min = 0      # Minimum H value
-v2_min = 155     # Minimum S value
-v3_min = 65      # Minimum V value
+v1_min = 15      # Minimum H value
+v2_min = 80     # Minimum S value
+v3_min = 45      # Minimum V value
 
-v1_max = 250     # Maximum H value
-v2_max = 245    # Maximum S value
+v1_max = 145     # Maximum H value
+v2_max = 215    # Maximum S value
 v3_max = 255    # Maximum V value
 
 target_width = 100      # Target pixel width of tracked object
